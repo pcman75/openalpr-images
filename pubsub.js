@@ -27,12 +27,5 @@ module.exports = function () {
 
   // Listen for new messages until timeout is hit
   subscription.on('message', messageHandler);
-
-  /*
-  setTimeout(() => {
-    subscription.removeListener('message', messageHandler);
-    console.log(`${messageCount} message(s) received.`);
-  }, timeout * 1000);
-  */
 }
 
