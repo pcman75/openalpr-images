@@ -1,45 +1,33 @@
-const lmdb = require('node-lmdb');
+const config = require('./config.js');
+const { spawn } = require('child_process');
 
-function extract_file(filename) {
+async function extract_files(key) {
+    let child = spawn('python', ['extract.py', '-k', key, '-o', key + '.jpg', config.images_db]);
 
-    var env = new lmdb.Env();
-    try {
-        env.open({
-            //path: '/var/lib/openalpr/plateimages/',
-            path: '/home/deepracer/test/',
-            mapSize: 1 * 1024 * 1024 * 1024, // maximum database size
-            //readOnly: true,
-            maxDbs: 1
-        });
-        // Open database
-        var dbi = env.openDbi({
-            name: "1589777607692",
-            create: false
-        });
-
-        var txn = env.beginTxn();
-
-        var stat = dbi.stat(txn);
-        console.log("\ndatabase statistics:");
-        console.dir(stat);
-
-        var cursor = new lmdb.Cursor(txn, dbi);
-
-        for (var found = cursor.goToFirst(); found !== null; found = cursor.goToNext()) {
-            // Here 'found' contains the key, and you can get the data with eg. getCurrentString/getCurrentBinary etc.
-            // ...
-            console.log(found);
-        }
-
-        txn.commit();
+    let data = "";
+    for await (const chunk of child.stdout) {
+        console.log(chunk.toString());
+        data += chunk;
     }
-    catch (err) {
-        console.error(err);
+    let error = "";
+    for await (const chunk of child.stderr) {
+        console.error(chunk.toString());
+        error += chunk;
     }
-    finally {
-        env.close();
+    const exitCode = await new Promise( (resolve, reject) => {
+        child.on('close', resolve);
+    });
+
+    if( exitCode) {
+        throw new Error( `subprocess error exit ${exitCode}, ${error}`);
     }
+    return data;
 }
-module.exports = { extract_file }
 
-extract_file('/var/lib/openalpr/plateimages/image_db/1589777607692.mdb');
+module.exports = { extract_files }
+
+extract_files('16T8UGBS6MZQAR1BEOLE5AJ2KFFN0221OV9JRKRX-501075612-1590305735320').then(
+    data=> {console.log("async result:\n" + data);},
+    err=>  {console.error("async error:\n" + err);}
+);
+//extract_files('16T8UGBS6MZQAR1BEOLE5AJ2KFFN0221OV9JRKRX-501075612-1590305735320');
