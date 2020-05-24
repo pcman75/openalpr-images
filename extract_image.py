@@ -21,9 +21,8 @@ lmdb_cursor = lmdb_txn.cursor()
 
 found_it = False
 for key, value in lmdb_cursor:
-
 	if key == options.key:
-		print "Extracting image: %s to %s" % (key, options.out)
+		print "Extracting file to: %s to %s" % (key, options.out)
 		with open(options.out, 'w') as of:
 			of.write(value)
 			found_it = True
