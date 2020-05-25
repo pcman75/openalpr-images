@@ -4,7 +4,7 @@ const config = require('./config.js');
 // Imports the Google Cloud client library
 const { Storage } = require('@google-cloud/storage');
 
-module.exports = async function upload(filename) {
+module.exports = async function uploadFile(filename) {
    const storage = new Storage();
 
    console.log('uploading: ' + filename);

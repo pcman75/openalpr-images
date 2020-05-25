@@ -25,7 +25,7 @@ async function executePython(arg) {
     return data;
 }
 
-async function extract_files(key) {
+module.exports = async function extractFiles(key, extractfolder) {
     const getDbForEpoch = (folder, epoch) => {
         let dbs = fs.readdirSync(folder).filter(filename =>-1 == filename.search(/^.*\.(mdb-lock)$/)).sort();
         let i = 0;
@@ -46,16 +46,9 @@ async function extract_files(key) {
     let epoch = parseInt(key.match(/([A-Z0-9]+)/g)[2]);
 
     let db = getDbForEpoch(config.images_db, epoch);
-    await executePython(['extract_image.py', '-k', key, '-o', key + '.jpg', config.images_db + '/' + db]);
+    await executePython(['extract_image.py', '-k', key, '-o', extractfolder + key + '.jpg', config.images_db + '/' + db]);
 
     db = getDbForEpoch(config.videos_db, epoch);
-    await executePython(['extract_video.py', '-e', epoch, '-o', key + '.mp4', config.videos_db + '/' + db]);
+    await executePython(['extract_video.py', '-e', epoch, '-o', extractfolder + key + '.mp4', config.videos_db + '/' + db]);
     return key;
 }
-
-module.exports = extract_files;
-
-/* extract_files('16T8UGBS6MZQAR1BEOLE5AJ2KFFN0221OV9JRKRX-501075612-1590073534456').then(
-    data => { console.log("async result:\n" + data); },
-    err => { console.error("async error:\n" + err); }
-); */

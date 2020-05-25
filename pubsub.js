@@ -12,6 +12,8 @@ const { PubSub } = require('@google-cloud/pubsub');
 // Creates a client; cache this for further use
 const pubSubClient = new PubSub();
 
+const { v1: uuid } = require('uuid');
+
 module.exports = function () {
   // References an existing subscription
   const subscription = pubSubClient.subscription(subscriptionName);
@@ -24,14 +26,20 @@ module.exports = function () {
     console.log(`\tAttributes: ${message.attributes}`);
     messageCount += 1;
 
+    let folder = uuid() + '/';
+    fs.mkdirSync(folder);
+
     let key = message.data.toString();
-    extractFiles(key)
-      .then(() => uploadFile(key + '.jpg'))
-      .then(() => uploadFile(key + '.mp4'))
+    extractFiles(key, folder)
+      .then(() => uploadFile(folder + key + '.jpg'))
+      .then(() => uploadFile(folder + key + '.mp4'))
       .then(() => {
         //delete extracted files
-        fs.unlinkSync(key + '.jpg');
-        fs.unlinkSync(key + '.mp4');
+        fs.unlinkSync(folder + key + '.jpg');
+        fs.unlinkSync(folder + key + '.mp4');
+
+        //and the folder
+        fs.rmdirSync(folder);
       })
       .then(() => {
         // "Ack" (acknowledge receipt of) the message
