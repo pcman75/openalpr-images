@@ -1,5 +1,7 @@
 require('dotenv').config();
-const extract_files = require("./extractfile.js");
+const extractFiles = require("./extractfile.js");
+const uploadFile = require("./uploadfile.js");
+const fs = require('fs');
 
 const subscriptionName = 'upload-images-sub';
 const timeout = 60;
@@ -22,13 +24,19 @@ module.exports = function () {
     console.log(`\tAttributes: ${message.attributes}`);
     messageCount += 1;
 
-    extract_files(message.data.toString()).then(
-      data => {
+    let key = message.data.toString();
+    extractFiles(key)
+      .then(() => uploadFile(key + '.jpg'))
+      .then(() => uploadFile(key + '.mp4'))
+      .then(() => {
+        //delete extracted files
+        fs.unlinkSync(key + '.jpg');
+        fs.unlinkSync(key + '.mp4');
+      })
+      .then(() => {
         // "Ack" (acknowledge receipt of) the message
         message.ack();
-      },
-      err => { console.error("Error extracting files:\n" + err); }
-    );
+      }).catch(console.error);
   };
 
   // Listen for new messages until timeout is hit

@@ -29,12 +29,15 @@ async function extract_files(key) {
     const getDbForEpoch = (folder, epoch) => {
         let dbs = fs.readdirSync(folder).filter(filename =>-1 == filename.search(/^.*\.(mdb-lock)$/)).sort();
         let i = 0;
+        let found = false;
         for (i in dbs) {
             let epoch_file = parseInt(dbs[i].substr(0, dbs[i].lastIndexOf('.mdb')))
-            if (epoch_file > epoch)
+            if (epoch_file > epoch){
+                found = true;
                 break;
+            }
         }
-        if(i > 0 && i < dbs.length - 1)
+        if(found)
             return dbs[i - 1];
         else
             return dbs[i]
@@ -47,6 +50,7 @@ async function extract_files(key) {
 
     db = getDbForEpoch(config.videos_db, epoch);
     await executePython(['extract_video.py', '-e', epoch, '-o', key + '.mp4', config.videos_db + '/' + db]);
+    return key;
 }
 
 module.exports = extract_files;
