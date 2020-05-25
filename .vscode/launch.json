@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "message loop",
+            "name": "start",
             "skipFiles": [
                 "<node_internals>/**"
             ],
