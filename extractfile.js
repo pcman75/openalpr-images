@@ -26,32 +26,32 @@ async function executePython(arg) {
 }
 
 async function extract_files(key) {
-    const getDbForEpoch = (folder) => {
-        let dbs = fs.readdirSync(folder).sort();
+    const getDbForEpoch = (folder, epoch) => {
+        let dbs = fs.readdirSync(folder).filter(filename =>-1 == filename.search(/^.*\.(mdb-lock)$/)).sort();
         let i = 0;
         for (i in dbs) {
             let epoch_file = parseInt(dbs[i].substr(0, dbs[i].lastIndexOf('.mdb')))
             if (epoch_file > epoch)
                 break;
         }
-        if(i > 2)
-            return dbs[i - 2];
+        if(i > 0 && i < dbs.length - 1)
+            return dbs[i - 1];
         else
-            return dbs[0]
+            return dbs[i]
     }
 
     let epoch = parseInt(key.match(/([A-Z0-9]+)/g)[2]);
 
-    let db = getDbForEpoch(config.images_db);
+    let db = getDbForEpoch(config.images_db, epoch);
     await executePython(['extract_image.py', '-k', key, '-o', key + '.jpg', config.images_db + '/' + db]);
 
-    db = getDbForEpoch(config.videos_db);
+    db = getDbForEpoch(config.videos_db, epoch);
     await executePython(['extract_video.py', '-e', epoch, '-o', key + '.mp4', config.videos_db + '/' + db]);
 }
 
-module.exports = { extract_files }
+module.exports = extract_files;
 
-extract_files('16T8UGBS6MZQAR1BEOLE5AJ2KFFN0221OV9JRKRX-501075612-1590073534456').then(
+/* extract_files('16T8UGBS6MZQAR1BEOLE5AJ2KFFN0221OV9JRKRX-501075612-1590073534456').then(
     data => { console.log("async result:\n" + data); },
     err => { console.error("async error:\n" + err); }
-);
+); */

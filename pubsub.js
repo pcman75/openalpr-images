@@ -1,10 +1,11 @@
 require('dotenv').config();
+const extract_files = require("./extractfile.js");
 
 const subscriptionName = 'upload-images-sub';
 const timeout = 60;
 
 // Imports the Google Cloud client library
-const {PubSub} = require('@google-cloud/pubsub');
+const { PubSub } = require('@google-cloud/pubsub');
 
 // Creates a client; cache this for further use
 const pubSubClient = new PubSub();
@@ -21,8 +22,13 @@ module.exports = function () {
     console.log(`\tAttributes: ${message.attributes}`);
     messageCount += 1;
 
-    // "Ack" (acknowledge receipt of) the message
-    message.ack();
+    extract_files(message.data.toString()).then(
+      data => {
+        // "Ack" (acknowledge receipt of) the message
+        message.ack();
+      },
+      err => { console.error("Error extracting files:\n" + err); }
+    );
   };
 
   // Listen for new messages until timeout is hit
