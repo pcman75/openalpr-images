@@ -3,8 +3,8 @@ const extractFiles = require("./extractfile.js");
 const uploadFile = require("./uploadfile.js");
 const fs = require('fs');
 
-const subscriptionName = 'upload-images-sub';
-const timeout = 60;
+const config = require('./config.js');
+
 
 // Imports the Google Cloud client library
 const { PubSub } = require('@google-cloud/pubsub');
@@ -16,7 +16,7 @@ const { v1: uuid } = require('uuid');
 
 module.exports = function () {
   // References an existing subscription
-  const subscription = pubSubClient.subscription(subscriptionName);
+  const subscription = pubSubClient.subscription(config.subscriptionName);
 
   // Create an event handler to handle messages
   let messageCount = 0;
@@ -26,7 +26,7 @@ module.exports = function () {
     console.log(`\tAttributes: ${message.attributes}`);
     messageCount += 1;
 
-    let folder = uuid() + '/';
+    let folder = config.working_folder + '/' + uuid() + '/';
     fs.mkdirSync(folder);
 
     let key = message.data.toString();
