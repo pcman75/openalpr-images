@@ -41,10 +41,11 @@ module.exports = function () {
         //and the folder
         fs.rmdirSync(folder);
       })
-      .then(() => {
+      .catch(console.error)
+      .finally(() => {
         // "Ack" (acknowledge receipt of) the message
         message.ack();
-      }).catch(console.error);
+      });
   };
 
   // Listen for new messages until timeout is hit
